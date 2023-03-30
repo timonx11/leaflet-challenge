@@ -1,11 +1,20 @@
 // Store our API endpoint as queryUrl.
 let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+// Store our API endpoint as platesUrl.
+let platesUrl = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
 // Perform a GET request to the query URL
-d3.json(queryUrl).then(function (data) {
-  // Once we get a response, send the data.features object to the createFeatures function.
-  createFeatures(data.features);
-  console.log(data);
+d3.json(queryUrl).then(function (edata) {
+  
+  
+  // Performing a 2nd GET request to the query URL
+  d3.json(platesUrl).then(function (pdata) {  
+    console.log(edata);
+    console.log(pdata);
+    // Once we get a response, send the both edata.features and pdata.features objects to the createFeatures function. 
+    createFeatures(edata.features, pdata.features); 
+  });
+
 });
 
 //Create markerSize function to determine the size of the cricle marker base on magnitude(feature.properties.mag)
@@ -15,19 +24,12 @@ function markerSize(magnitude) {
 
 // Change marker color based on depth
 function markerColor(depth) {
-  if (depth > 90) {
-      return '#4d0099'
-  } else if (depth > 70) {
-    return '#ac00e6'
-  } else if (depth > 50) {
-    return '#ff3399'
-  } else if (depth > 30) {
-    return '#ff9999'
-  } else if (depth > 10) {
-    return '#ffcc99'
-  } else {
-    return '#ffe6cc'
-  }
+  if (depth > 90) return '#4d0099'
+   else if (depth > 70) return '#ac00e6'
+   else if (depth > 50) return '#ff3399'
+   else if (depth > 30) return '#ff9999'
+   else if (depth > 10) return '#ffcc99'
+   else return '#ffe6cc'  
 }
 
 // Create markers whose size increases with magnitude and color with depth
@@ -42,8 +44,16 @@ function createMarker(feature, latlng) {
     });
 }
 
+// create fuction to set tectonicplates line colors as yelow and make it a bit bold-er
+function myStyle() {
+  return {
+      color: "yellow",
+      weight: 2
+  }
+}
+
 // Define a function that we want to run once for each feature in the features array.
-function createFeatures(earthquakeData) {
+function createFeatures(earthquakeData, platesData) {
   // Give each feature a popup that describes the place and time of the earthquake.
   function popUp(feature, layer) {
     layer.bindPopup(`<h3>Location: ${feature.properties.place}</h3><hr><p><h4>Timestamp: </h4>${new Date(feature.properties.time)}</p><hr><p><b>Magnitude: </b>${feature.properties.mag} <br> <b>Depth: </b>${feature.geometry.coordinates[2]} </p>`);
@@ -57,11 +67,18 @@ function createFeatures(earthquakeData) {
     
   }); 
 
+  // Create a GeoJSON layer that contains the features array on the platesData object.
+  // Run the onEachFeature function once for each piece of data in the array.
+  let plates = L.geoJSON(platesData, {
+    style: myStyle
+  });
+
+
   // Send our earthquakes layer to the createMap function
-  createMap(earthquakes);
+  createMap(earthquakes, plates);
 }
 
-function createMap(earthquakes) {
+function createMap(earthquakes, plates) {
 
   // Create the base layers.
   let street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -80,7 +97,8 @@ function createMap(earthquakes) {
 
   // Create an overlay object to hold our overlay.
   let overlayMaps = {
-    Earthquakes: earthquakes
+    Earthquakes: earthquakes,
+    "Tectonic Plates": plates
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load.
@@ -89,7 +107,7 @@ function createMap(earthquakes) {
         -7.814, 104.96332
     ],
     zoom: 3,
-    layers: [street, earthquakes]
+    layers: [street, earthquakes, plates]
   });
 
   // Create a layer control.

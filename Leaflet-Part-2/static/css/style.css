@@ -9,6 +9,7 @@ html {
   height: 100%;
 }
 
+/* add additional css styling to display legend pn map */
 .legend {
   line-height: 18px;
   color: #555;

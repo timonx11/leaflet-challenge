@@ -4,8 +4,9 @@ let queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_we
 // Perform a GET request to the query URL
 d3.json(queryUrl).then(function (data) {
   // Once we get a response, send the data.features object to the createFeatures function.
-  createFeatures(data.features);
   console.log(data);
+  createFeatures(data.features);
+  
 });
 
 //Create markerSize function to determine the size of the cricle marker base on magnitude(feature.properties.mag)
@@ -15,19 +16,12 @@ function markerSize(magnitude) {
 
 // Change marker color based on depth
 function markerColor(depth) {
-  if (depth > 90) {
-      return '#4d0099'
-  } else if (depth > 70) {
-    return '#ac00e6'
-  } else if (depth > 50) {
-    return '#ff3399'
-  } else if (depth > 30) {
-    return '#ff9999'
-  } else if (depth > 10) {
-    return '#ffcc99'
-  } else {
-    return '#ffe6cc'
-  }
+  if (depth > 90) return '#4d0099'
+   else if (depth > 70) return '#ac00e6'
+   else if (depth > 50) return '#ff3399'
+   else if (depth > 30) return '#ff9999'
+   else if (depth > 10) return '#ffcc99'
+   else return '#ffe6cc'  
 }
 
 // Create markers whose size increases with magnitude and color with depth
